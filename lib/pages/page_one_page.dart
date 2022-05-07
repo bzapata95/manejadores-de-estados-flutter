@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:status_app/bloc/user/user_bloc.dart';
+
+import '../models/user.dart';
 
 class PageOnePage extends StatelessWidget {
   const PageOnePage({Key? key}) : super(key: key);
@@ -8,8 +12,20 @@ class PageOnePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Page One'),
+        actions: [
+          IconButton(
+              icon: Icon(Icons.delete_outlined),
+              onPressed: () {
+                BlocProvider.of<UserBloc>(context, listen: false)
+                    .add(DeleteUserEvent());
+              })
+        ],
       ),
-      body: UserInformation(),
+      body: BlocBuilder<UserBloc, UserState>(builder: (_, state) {
+        return state.existUser
+            ? UserInformation(user: state.user!)
+            : const Center(child: Text('No user'));
+      }),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.abc_outlined),
         onPressed: () {
@@ -21,8 +37,11 @@ class PageOnePage extends StatelessWidget {
 }
 
 class UserInformation extends StatelessWidget {
+  final User user;
+
   const UserInformation({
     Key? key,
+    required this.user,
   }) : super(key: key);
 
   @override
@@ -33,29 +52,26 @@ class UserInformation extends StatelessWidget {
         padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
+          children: [
+            const Text(
               'General',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              title: Text('Nombre'),
+              title: Text('Nombre: ${user.nombre}'),
             ),
             ListTile(
-              title: Text('Edad'),
+              title: Text('Edad: ${user.edad}'),
             ),
-            Text(
+            const Text(
               'Profesiones',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            Divider(),
-            ListTile(
-              title: Text('Profesión 1'),
-            ),
-            ListTile(
-              title: Text('Profesión 2'),
-            ),
+            const Divider(),
+            ...user.profesiones.map((profesion) => ListTile(
+                  title: Text(profesion),
+                )),
           ],
         ));
   }
